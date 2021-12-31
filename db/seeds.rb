@@ -1,10 +1,25 @@
-# This file should contain all the record creation needed to seed the database with its default values.
-# The data can then be loaded with the rails db:seed command (or created alongside the database with db:setup).
 #
-# Examples:
+# Place all seeds in /seeds/ folder.
 #
-#   movies = Movie.create([{ name: 'Star Wars' }, { name: 'Lord of the Rings' }])
-#   Character.create(name: 'Luke', movie: movies.first)
+Dir[File.dirname(__FILE__) + '/seeds/*.rb'].sort.each do |file|
+  puts "Seeds #{file} ..."
+  require file
+end
+
 
 Spree::Core::Engine.load_seed if defined?(Spree::Core)
 Spree::Auth::Engine.load_seed if defined?(Spree::Auth)
+
+unless Contact.count > 0
+  load_seed('contacts').each do |s|
+    Contact.create(s)
+  end
+  puts("Created Contact on #{Rails.env} environment")
+end
+
+unless Message.count > 0
+  load_seed('messages').each do |s|
+    Message.create(s)
+  end
+  puts("Created messages on #{Rails.env} environment")
+end

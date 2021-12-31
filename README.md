@@ -1,54 +1,143 @@
-# Material Instinct LLC - DNA Boilerplate for Admin UI
+# DOCKER SETUP
 
-Running the app locally (w/o Docker):
+## Build
 
-Requirements: ruby 2.6.2, rails 5.2.2, Postgres
+This should only have to be done once, or whenever the Gemfile is updated.
 
-1. Clone this repo
-1. Copy `.env.example` to `.env.development`
-1. Copy app secrets from shared Dashlane.app secure note into `.env.development`
-1. Create a local postgres database (dev & test)
-1. Create a local postgres user: `CREATE USER psycle_admin;`
-1. `ALTER USER <user> WITH SUPERUSER;`
-1. `GRANT ALL PRIVILEGES ON DATABASE <db> TO <user>;`
-1. Make sure the database creds match those in `.env.development`
-1. Run `bundle install`
-1. Run `rails g spree:install --user_class=Spree::User` (say "no" to all overwrites)
-1. Run `rails g spree:auth:install` (say "no" to all overwrites)
-1. Run `rails g spree_gateway:install`
+```docker-compose build
+```
 
-1. Run `rake db:schema:load`
-1. Run `rake db:seed`
+## Create Containers
 
-1. Run `rake spree_sample:load`
-1. Run `rails s`
+```docker-compose up
+```
 
-If you need to reset your local DB:
+DNA Admin should now be available at localhost:8080,
+but it probably needs to be set up first.
 
-1. Run `rake db:reset`
-1. Run `rake railties:install:migrations`
-1. Run `rake db:migrate`
-1. Run `rake db:seed`
-1. Run `rake spree_sample:load`
+## Set up system
 
----
+In a new terminal run:
+
+```docker-compose exec web rails db:create db:schema:load db:migrate &&
+docker-compose exec -e ADMIN_EMAIL=spree@example.com -e ADMIN_PASSWORD=spree123 web rails db:seed &&
+docker-compose exec web rails spree_sample:load &&
+docker-compose restart
+```
+
+### The Default User
+
+email: spree@example.com
+password: spree123
+
+## Reset DB
+
+This will reset the existing database back to blank.
+
+```docker-compose exec web rails db:reset railties:install:migrations db:migrate db:seed spree_sample:load
+```
+
+You could also blow away all the DB files.  WARNING! You'll have to start
+the install over again if you do this.
+
+```sudo rm -rf tmp/db
+```
+
+## Extensions
+
+The system uses 3 spree extensions
+
+* `spree_reffiliate` (Thanks @Gaurav2728)
+  [github](https://github.com/Gaurav2728/spree_reffiliate)
+* `spree_static_content`
+  [github](https://github.com/spree-contrib/spree_static_content)
+* `spree_digital`
+  [github](https://github.com/spree-contrib/spree_digital)
+* `spree_promo_users_codes`
+  [github](https://github.com/vinsol-spree-contrib/spree_promo_users_codes)
+
+Each one is installed _after_ spree, with it's own migrations generated using a
+specific `bundle exec rails g` command, which can be found on the README of the github
+page for each project.  This only needs to be done once after spree is installed or upgraded.
+
+## Scripts
+
+1. Generate **Affiliate Codes** for Existing Users: `bundle exec rake reffiliate:generate`
+1. Create or reset a **New Admin User**: `docker-compose exec web rails spree_auth:admin:create`
+
+## Deploy
+
+This uses heroku ruby buildpack on the heroku-20 stack.  The `master` branch
+on github is hooked in to the deployment.
+
+Git: https://github.com/POL-Clothing/pol-admin
+
+### Testing Production Settings
+
+To test the production settings locally (used to test things like the S3 buckets
+for active storage), you need to set environment variables directly in
+the `docker-compose.yml` file.  The production environment is configured
+to NOT use `.env` files.
+
+To do this, apply the following patch to `docker-compose.yml` (after filling
+in real values for the keys and bucket name):
+
+```--- docker-compose.yml.orig     2021-06-02 10:50:59.011383071 -0400
++++ docker-compose.yml  2021-06-02 10:51:03.267414021 -0400
+@@ -16,4 +16,10 @@
+     depends_on:
+       - db
+     environment:
+-      DATABASE_URL: postgres://postgres:password@db:5432/dna_admin_development
++      DATABASE_URL: postgres://postgres:password@db:5432/dna_admin_production
++      RAILS_ENV: production
++      AWS_REGION_NAME: us-west-1
++      AWS_BUCKET_NAME:
++      AWS_ACCESS_KEY_ID:
++      AWS_SECRET_ACCESS_KEY:
++      RAILS_SERVE_STATIC_FILES: 1
+```
+
+After building and starting the container, you will need to build the assets
+in the local container with:
+
+```docker-compose exec web rails assets:precompile
+docker-compose restart
+```
+
+## Keeping Your Code Updated
+
+When there are lots of active changes occuring on this repo, make sure to regularly:
+
+1. Commit (or stash) your local changes on your branch
+1. `git fetch origin`
+1. `git checkout main`
+1. `git pull origin main`
+1. `git checkout <your_branch>`
+1. `git merge main`
+1. Fix merge conflicts (if any)
+1. `git add .`
+1. `git commit -m 'merge in latest main'`
+
+Done!
+…now you will be up-to-date with latest code. Do this before you submit your PR, and you can be sure it will be a clean merge.
+
+## TODO
 
 Other things we may need to cover:
 
-* Ruby version
+1. Ruby version
 
-* System dependencies
+1. System dependencies
 
-* Configuration
+1. Configuration
 
-* Database creation
+1. Database creation
 
-* Database initialization
+1. Database initialization
 
-* How to run the test suite
+1. How to run the test suite
 
-* Services (job queues, cache servers, search engines, etc.)
+1. Services (job queues, cache servers, search engines, etc.)
 
-* Deployment instructions
-
-* ...
+1. Deployment instructions
