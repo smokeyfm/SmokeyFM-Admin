@@ -16,8 +16,10 @@ Requirements: ruby 2.6.2, rails 5.2.2, Postgres
 1. Run `rails g spree:install --user_class=Spree::User` (say "no" to all overwrites)
 1. Run `rails g spree:auth:install` (say "no" to all overwrites)
 1. Run `rails g spree_gateway:install`
+
 1. Run `rake db:schema:load`
 1. Run `rake db:seed`
+
 1. Run `rake spree_sample:load`
 1. Run `rails s`
 

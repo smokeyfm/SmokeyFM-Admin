@@ -39,11 +39,15 @@ gem 'bootsnap', '>= 1.1.0', require: false
 gem "aws-sdk-s3", require: false
 
 gem 'spree', '~> 3.7'
+# gem 'spree_dev_tools' // Not until we upgrade to Spree 4
 gem 'spree_auth_devise', '~> 3.5'
 gem 'spree_gateway', '~> 3.4'
 gem 'spree_static_content', github: 'spree-contrib/spree_static_content'
 
 gem 'rest-client'
+
+# Active Module Serializer (for React frontend)
+# gem 'spree_ams', github: 'vinsol-spree-contrib/spree_ams', branch: '3-1-stable'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
@@ -67,6 +71,11 @@ group :test do
   gem 'selenium-webdriver'
   # Easy installation and use of chromedriver to run system tests with Chrome
   gem 'chromedriver-helper'
+
+  # Spree recommended tests
+  # gem 'rails-controller-testing'
+  # gem 'rspec-rails', '~> 3.8.0'
+  # gem 'rspec-activemodel-mocks'
 end
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
